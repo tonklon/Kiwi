@@ -17,6 +17,7 @@
 #import "KWStringUtilities.h"
 #import "KWVerifying.h"
 #import "NSMethodSignature+KiwiAdditions.h"
+#import "KWWorkarounds.h"
 
 @interface KWTestCase()
 
@@ -178,6 +179,12 @@
 
     @try {
         [super invokeTest];
+
+#if KW_TARGET_HAS_INVOCATION_EXCEPTION_BUG
+        // An Exception might hav been raised during the test, that is
+        NSException *exception = KWGetAndClearExceptionFromAcrossInvocationBoundary();
+        [exception raise];
+#endif // #if KW_TARGET_HAS_INVOCATION_EXCEPTION_BUG
 
         for (id<KWVerifying> verifier in self.verifiers)
             [verifier exampleWillEnd];
